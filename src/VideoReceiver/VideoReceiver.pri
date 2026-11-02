@@ -15,7 +15,7 @@ LinuxBuild {
     QT += x11extras waylandclient
     CONFIG += link_pkgconfig
     packagesExist(gstreamer-1.0) {
-        PKGCONFIG   += gstreamer-1.0  gstreamer-video-1.0 gstreamer-gl-1.0 gstreamer-app-1.0 egl
+        PKGCONFIG   += gstreamer-1.0  gstreamer-video-1.0 gstreamer-gl-1.0 egl
         CONFIG      += VideoEnabled
     }
 } else:MacBuild {
@@ -103,15 +103,6 @@ LinuxBuild {
             -lgstopengl \
             -lgsttcp
 
-        # Video forwarding to an RTMP server (appsink/appsrc, flvmux, rtmp2sink)
-        exists($$GST_ROOT/lib/gstreamer-1.0/libgstapp.a):exists($$GST_ROOT/lib/gstreamer-1.0/libgstflv.a):exists($$GST_ROOT/lib/gstreamer-1.0/libgstrtmp2.a) {
-            message("Including support for RTMP video forwarding")
-            DEFINES += QGC_GST_STATIC_FORWARDING
-            LIBS += -lgstapp -lgstflv -lgstrtmp2
-        } else {
-            message("Skipping RTMP video forwarding (app, flv or rtmp2 GStreamer plugin missing)")
-        }
-
         # Rest of GStreamer dependencies
         LIBS += -L$$GST_ROOT/lib \
             -lgraphene-1.0 -ljpeg -lpng16 \
@@ -150,7 +141,6 @@ VideoEnabled {
 
     HEADERS += \
         $$PWD/GStreamer.h \
-        $$PWD/GstStreamForwarder.h \
         $$PWD/GstVideoReceiver.h \
         $$PWD/VideoReceiver.h
 
@@ -158,7 +148,6 @@ VideoEnabled {
         $$PWD/gstqgcvideosinkbin.c \
         $$PWD/gstqgc.c \
         $$PWD/GStreamer.cc \
-        $$PWD/GstStreamForwarder.cc \
         $$PWD/GstVideoReceiver.cc
 
     include($$PWD/../../qmlglsink.pri)

@@ -55,8 +55,6 @@ public:
     Q_PROPERTY(bool             decoding                READ    decoding                                    NOTIFY decodingChanged)
     Q_PROPERTY(bool             recording               READ    recording                                   NOTIFY recordingChanged)
     Q_PROPERTY(QSize            videoSize               READ    videoSize                                   NOTIFY videoSizeChanged)
-    Q_PROPERTY(bool             streamForwardActive     READ    streamForwardActive                         NOTIFY streamForwardStatusChanged)
-    Q_PROPERTY(QString          streamForwardStatus     READ    streamForwardStatus                         NOTIFY streamForwardStatusChanged)
 
     virtual bool        hasVideo            ();
     virtual bool        isGStreamer         ();
@@ -113,8 +111,6 @@ public:
 
     Q_INVOKABLE void grabImage(const QString& imageFile = QString());
 
-    /// Forwards the main camera video to a remote server (rtmp://...); empty stops forwarding
-    Q_INVOKABLE void setStreamForwardUrl(const QString& url);
     /// DhakshaGroundControl: RTSP address shown in the picture-in-picture box (the camera not on the main
     /// screen), played by the second receiver; empty stops it. Used when no MAVLink camera gives a thermal stream.
     void setSecondaryRtspUrl(const QString& url);
@@ -122,8 +118,6 @@ public:
     /// DhakshaGroundControl: the main camera is played by the fast player (DhakshaVideoItem), so QGC's own
     /// receiver leaves it alone; the video settings stay as they are
     void setMainVideoExternal(bool external);
-    bool    streamForwardActive () const { return _streamForwardActive; }
-    QString streamForwardStatus () const { return _streamForwardStatus; }
 
 signals:
     void hasVideoChanged            ();
@@ -140,7 +134,6 @@ signals:
     void recordingChanged           ();
     void recordingStarted           ();
     void videoSizeChanged           ();
-    void streamForwardStatusChanged ();
 
 protected slots:
     void _videoSourceChanged        ();
@@ -152,7 +145,6 @@ protected slots:
     void _setActiveVehicle          (Vehicle* vehicle);
     void _aspectRatioChanged        ();
     void _communicationLostChanged  (bool communicationLost);
-    void _sendStreamTelemetry       ();
 
 protected:
     friend class FinishVideoInitialization;
@@ -190,9 +182,6 @@ protected:
     VideoSettings*          _videoSettings          = nullptr;
     QString                 _videoSourceID;
     bool                    _fullScreen             = false;
-    bool                    _streamForwardActive    = false;
-    QTimer                  _streamTelemetryTimer;
-    QString                 _streamForwardStatus;
     Vehicle*                _activeVehicle          = nullptr;
 };
 

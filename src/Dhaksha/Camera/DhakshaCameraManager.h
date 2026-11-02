@@ -7,8 +7,8 @@
  * the manager creates the matching DhakshaGimbalCamera and points QGC's video
  * stream at the camera's RTSP URL so video starts automatically. Until a
  * camera has been applied the vendor is None and QGC's own video settings are
- * left untouched. Optionally the video
- * is also forwarded to a remote RTMP server.
+ * left untouched. Sending the video to a server is done by the DhakshaKey
+ * (Termux) app, not here.
  *
  ****************************************************************************/
 
@@ -64,8 +64,6 @@ public:
     Q_PROPERTY(QStringList thermalPaletteNames READ thermalPaletteNames CONSTANT)
     Q_PROPERTY(int  thermalPalette  READ thermalPalette WRITE setThermalPalette NOTIFY thermalPaletteChanged)  ///< Night camera palette, saved; sent when chosen and when the camera connects
     Q_PROPERTY(int  videoMode       READ videoMode      WRITE setVideoMode      NOTIFY videoModeChanged)       ///< VideoMode, saved per camera; used from the next apply()
-    Q_PROPERTY(bool     streamForwardEnabled    READ streamForwardEnabled   WRITE setStreamForwardEnabled   NOTIFY streamForwardEnabledChanged)
-    Q_PROPERTY(QString  streamForwardUrl        READ streamForwardUrl       WRITE setStreamForwardUrl       NOTIFY streamForwardUrlChanged)
     Q_PROPERTY(bool nativeVideoSupported READ nativeVideoSupported CONSTANT)                                    ///< The fast player works on this platform (Android)
     Q_PROPERTY(bool nativeVideo     READ nativeVideo    WRITE setNativeVideo    NOTIFY nativeVideoChanged)     ///< Fast player chosen in the settings, saved
     Q_PROPERTY(bool nativeVideoActive READ nativeVideoActive                    NOTIFY nativeVideoChanged)     ///< The Fly View plays the main camera with the fast player
@@ -99,12 +97,9 @@ public:
     static constexpr int    kMinGimbalSpeed = 10;
     static constexpr int    kMaxGimbalSpeed = 60;
     DhakshaGimbalCamera*    camera      () const { return _camera; }
-    bool                    streamForwardEnabled() const { return _streamForwardEnabled; }
-    QString                 streamForwardUrl    () const { return _streamForwardUrl; }
     static bool             nativeVideoSupported();
     bool                    nativeVideo () const { return _nativeVideo; }
     void                    setNativeVideo(bool native);
-    /// Stream to Server forwards the video through QGC's own receiver, so it keeps the Standard player
     bool                    nativeVideoActive() const { return _nativeVideoActive; }
     QString                 mainVideoUrl() const { return _mainVideoUrl; }
     int                     nativeTransport() const { return _nativeTransport; }
@@ -121,10 +116,8 @@ public:
 
     /// Switches the video on screen between the day and the night (thermal) stream; apply() goes back to day.
     Q_INVOKABLE void toggleNightView();
-    void setStreamForwardEnabled(bool enabled);
-    void setStreamForwardUrl    (const QString& url);
 
-    /// Saves the settings, (re)creates the camera instance, starts its RTSP video stream and the server forwarding.
+    /// Saves the settings, (re)creates the camera instance, and starts its RTSP video stream.
     Q_INVOKABLE void apply();
 
     /// Start-up: same as apply() with the stored settings, without saving them.
@@ -150,8 +143,6 @@ signals:
     void thermalPaletteChanged();
     void videoModeChanged();
     void cameraChanged  ();
-    void streamForwardEnabledChanged();
-    void streamForwardUrlChanged    ();
     void nativeVideoChanged();
     void mainVideoUrlChanged();
     void nativeTransportChanged();
@@ -167,7 +158,6 @@ private:
     void _createCamera          ();
     void _startVideoStream      ();
     void _showVideo             (const QString& rtspUrl);
-    void _applyStreamForward    ();
     void _applyNativeVideo      ();
     void _applyVideoMode        ();
     void _updatePipVideo        ();
@@ -180,8 +170,6 @@ private:
     bool                    _nightView  = false;
     bool                    _pipCamera  = true;
     DhakshaGimbalCamera*    _camera     = nullptr;
-    bool                    _streamForwardEnabled = false;
-    QString                 _streamForwardUrl;
     bool                    _nativeVideo = true;
     bool                    _nativeVideoActive = false;
     QString                 _mainVideoUrl;

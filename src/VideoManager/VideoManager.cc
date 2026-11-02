@@ -12,9 +12,6 @@
 #include <QQmlEngine>
 #include <QSettings>
 #include <QUrl>
-#include <QGeoCoordinate>
-#include <QJsonObject>
-#include <QDateTime>
 #include <QDir>
 #include <QQuickWindow>
 
@@ -108,9 +105,6 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
    MultiVehicleManager *pVehicleMgr = qgcApp()->toolbox()->multiVehicleManager();
    connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
 
-   _streamTelemetryTimer.setInterval(100);
-   connect(&_streamTelemetryTimer, &QTimer::timeout, this, &VideoManager::_sendStreamTelemetry);
-
 #if defined(QGC_GST_STREAMING)
     GStreamer::blacklist(static_cast<VideoSettings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
 #ifndef QGC_DISABLE_UVC
@@ -172,12 +166,6 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
     connect(_videoReceiver[0], &VideoReceiver::videoSizeChanged, this, [this](QSize size){
         _videoSize = ((quint32)size.width() << 16) | (quint32)size.height();
         emit videoSizeChanged();
-    });
-
-    connect(_videoReceiver[0], &VideoReceiver::streamForwardStatusChanged, this, [this](bool active, const QString& message){
-        _streamForwardActive = active;
-        _streamForwardStatus = message;
-        emit streamForwardStatusChanged();
     });
 
     //connect(_videoReceiver, &VideoReceiver::onTakeScreenshotComplete, this, [this](VideoReceiver::STATUS status){
@@ -909,52 +897,3 @@ VideoManager::_aspectRatioChanged()
     emit aspectRatioChanged();
 }
 
-//-----------------------------------------------------------------------------
-void
-VideoManager::setStreamForwardUrl(const QString& url)
-{
-#if defined(QGC_GST_STREAMING)
-    if (_videoReceiver[0] != nullptr) {
-        _videoReceiver[0]->setStreamForwardUrl(url);
-        if (url.trimmed().isEmpty()) {
-            _streamTelemetryTimer.stop();
-        } else {
-            _sendStreamTelemetry();
-            _streamTelemetryTimer.start();
-        }
-        return;
-    }
-#endif
-    if (!url.trimmed().isEmpty()) {
-        _streamForwardActive = false;
-        _streamForwardStatus = tr("Video streaming is not supported in this build");
-        emit streamForwardStatusChanged();
-    }
-}
-
-//-----------------------------------------------------------------------------
-void
-VideoManager::_sendStreamTelemetry()
-{
-#if defined(QGC_GST_STREAMING)
-    if (_videoReceiver[0] == nullptr) {
-        return;
-    }
-
-    QJsonObject telemetry;
-    telemetry[QStringLiteral("ts")] = QDateTime::currentMSecsSinceEpoch();
-
-    const QGeoCoordinate coordinate = _activeVehicle ? _activeVehicle->coordinate() : QGeoCoordinate();
-    if (_activeVehicle && coordinate.isValid()) {
-        telemetry[QStringLiteral("lat")]        = coordinate.latitude();
-        telemetry[QStringLiteral("lon")]        = coordinate.longitude();
-        telemetry[QStringLiteral("alt_msl")]    = _activeVehicle->altitudeAMSL()->rawValue().toDouble();
-        telemetry[QStringLiteral("alt_rel")]    = _activeVehicle->altitudeRelative()->rawValue().toDouble();
-        telemetry[QStringLiteral("hdg")]        = _activeVehicle->heading()->rawValue().toDouble();
-    } else {
-        telemetry[QStringLiteral("no_position")] = true;
-    }
-
-    _videoReceiver[0]->setStreamMetadata(telemetry);
-#endif
-}

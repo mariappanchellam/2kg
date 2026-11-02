@@ -24,7 +24,6 @@
 #include <QQuickItem>
 
 #include "VideoReceiver.h"
-#include "GstStreamForwarder.h"
 
 #include <gst/gst.h>
 
@@ -97,8 +96,6 @@ public slots:
     virtual void startRecording(const QString& videoFile, FILE_FORMAT format);
     virtual void stopRecording(void);
     virtual void takeScreenshot(const QString& imageFile);
-    virtual void setStreamForwardUrl(const QString& url);
-    virtual void setStreamMetadata(const QJsonObject& metadata);
 
 protected slots:
     virtual void _watchdog(void);
@@ -119,7 +116,6 @@ protected:
     virtual bool _unlinkBranch(GstElement* from);
     virtual void _shutdownDecodingBranch (void);
     virtual void _shutdownRecordingBranch(void);
-    bool _addForwardBranch(void);
 
     bool _needDispatch(void);
     void _dispatchSignal(std::function<void()> emitter);
@@ -147,8 +143,6 @@ protected:
     GstElement*         _videoSink;
     GstElement*         _fileSink;
     GstElement*         _pipeline;
-    GstElement*         _forwardBranch      = nullptr;
-    GstStreamForwarder* _forwarder          = nullptr;
 
     qint64              _lastSourceFrameTime;
     qint64              _lastVideoFrameTime;

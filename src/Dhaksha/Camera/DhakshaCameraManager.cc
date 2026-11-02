@@ -33,8 +33,6 @@ namespace {
     const char* kRtspTcpKey     = "DhakshaCamera/rtspTcp";
     // Day address saved by builds before the Skydroid's real one (port 554 stream=1) was known
     const char* kOldSkydroidRtsp = "rtsp://192.168.144.108:554/stream=0";
-    const char* kForwardKey     = "streamForwardEnabled";
-    const char* kForwardUrlKey  = "streamForwardUrl";
     const char* kGimbalSpeedKey = "DhakshaCamera/gimbalMaxSpeed";
     const char* kThermalPaletteKey = "DhakshaCamera/thermalPalette";
     const char* kPipCameraKey   = "pipCamera";
@@ -73,11 +71,6 @@ DhakshaCameraManager::DhakshaCameraManager(QObject* parent)
         const int saved = settings.value(kVendorKey, VendorSkydroid).toInt();
         _vendor = saved == VendorZr10 ? VendorZr10 : VendorSkydroid;
     }
-    // DhakshaKey sends the video to the server from Termux now, so forwarding always starts off,
-    // whatever an earlier build saved; forwarding inside the app as well could crash it
-    _streamForwardEnabled = false;
-    settings.setValue(kForwardKey, false);
-    _streamForwardUrl = settings.value(kForwardUrlKey).toString();
     _pipCamera = settings.value(kPipCameraKey, true).toBool();
     _nativeVideo = settings.value(kNativeVideoKey, true).toBool();
     _nativeTransport = qBound(static_cast<int>(NativeTransportTcp), settings.value(kNativeTransportKey, NativeTransportTcp).toInt(),
@@ -138,8 +131,6 @@ void DhakshaCameraManager::_saveSettings()
     settings.beginGroup(kSettingsGroup);
     settings.setValue(kConfiguredKey, true);
     settings.setValue(kVendorKey, _vendor);
-    settings.setValue(kForwardKey, _streamForwardEnabled);
-    settings.setValue(kForwardUrlKey, _streamForwardUrl);
     settings.beginGroup(vendorKey(_vendor));
     settings.setValue(kIpKey, _cameraIp);
     settings.setValue(kRtspKey, _rtspUrl);
@@ -174,23 +165,6 @@ void DhakshaCameraManager::setRtspUrl(const QString& rtspUrl)
         _rtspUrl = trimmed;
         emit rtspUrlChanged();
         emit pipAvailableChanged();
-    }
-}
-
-void DhakshaCameraManager::setStreamForwardEnabled(bool enabled)
-{
-    if (enabled != _streamForwardEnabled) {
-        _streamForwardEnabled = enabled;
-        emit streamForwardEnabledChanged();
-    }
-}
-
-void DhakshaCameraManager::setStreamForwardUrl(const QString& url)
-{
-    const QString trimmed = url.trimmed();
-    if (trimmed != _streamForwardUrl) {
-        _streamForwardUrl = trimmed;
-        emit streamForwardUrlChanged();
     }
 }
 
@@ -335,7 +309,6 @@ void DhakshaCameraManager::start()
     _applyNativeVideo();
     _startVideoStream();
     _updatePipVideo();
-    _applyStreamForward();
     emit videoRestartRequested();
 }
 
@@ -377,7 +350,7 @@ void DhakshaCameraManager::setNativeVideoStatus(const QString& status)
 
 void DhakshaCameraManager::_applyNativeVideo()
 {
-    _nativeVideoActive = nativeVideoSupported() && _nativeVideo && (_vendor != VendorNone) && !_streamForwardEnabled;
+    _nativeVideoActive = nativeVideoSupported() && _nativeVideo && (_vendor != VendorNone);
 #ifndef DHAKSHA_CAMERA_NO_QGC
     qgcApp()->toolbox()->videoManager()->setMainVideoExternal(_nativeVideoActive);
 #endif
@@ -457,15 +430,5 @@ void DhakshaCameraManager::_applyVideoMode()
     }
 #else
     Q_UNUSED(changed)
-#endif
-}
-
-void DhakshaCameraManager::_applyStreamForward()
-{
-#ifndef DHAKSHA_CAMERA_NO_QGC
-    VideoManager* videoManager = qgcApp()->toolbox()->videoManager();
-    if (videoManager) {
-        videoManager->setStreamForwardUrl(_streamForwardEnabled ? _streamForwardUrl : QString());
-    }
 #endif
 }
