@@ -638,6 +638,10 @@ VideoManager::_updateSettings(unsigned id)
 
     _lowLatencyStreaming[id] = lowLatencyStreaming;
 
+    if ((id == 0) && _mainVideoExternal) {
+        return _updateVideoUri(0, QString()) || settingsChanged;
+    }
+
     //-- Auto discovery
 
     if(_activeVehicle && _activeVehicle->cameraManager()) {
@@ -737,6 +741,17 @@ VideoManager::setSecondaryRtspUrl(const QString& url)
     }
     _secondaryRtspUrl = url;
     _restartVideo(1);
+}
+
+//-----------------------------------------------------------------------------
+void
+VideoManager::setMainVideoExternal(bool external)
+{
+    if (external == _mainVideoExternal) {
+        return;
+    }
+    _mainVideoExternal = external;
+    _restartVideo(0);
 }
 
 //-----------------------------------------------------------------------------

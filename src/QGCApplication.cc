@@ -88,6 +88,7 @@
 #include "FactValueSliderListModel.h"
 #include "ShapeFileHelper.h"
 #include "DhakshaCameraManager.h"
+#include "DhakshaVideoItem.h"
 #include "QGCFileDownload.h"
 #include "FirmwareImage.h"
 #include "MavlinkConsoleController.h"
@@ -535,6 +536,7 @@ void QGCApplication::_initCommon()
     qmlRegisterSingletonType<ShapeFileHelper>           ("MAVLink",                                 1, 0, "MAVLink",                mavlinkSingletonFactory);
     qmlRegisterSingletonType<DhakshaCameraManager>      ("QGroundControl.DhakshaCamera",            1, 0, "DhakshaCameraManager",   DhakshaCameraManager::qmlSingletonFactory);
     qmlRegisterUncreatableType<DhakshaGimbalCamera>     ("QGroundControl.DhakshaCamera",            1, 0, "DhakshaGimbalCamera",    kRefOnly);
+    qmlRegisterType<DhakshaVideoItem>                   ("QGroundControl.DhakshaCamera",            1, 0, "DhakshaVideoItem");
 
     // Although this should really be in _initForNormalAppBoot putting it here allowws us to create unit tests which pop up more easily
     if(QFontDatabase::addApplicationFont(":/fonts/opensans") < 0) {

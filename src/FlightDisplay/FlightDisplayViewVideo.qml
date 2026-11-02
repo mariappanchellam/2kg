@@ -19,6 +19,7 @@ import QGroundControl.Controls          1.0
 import QGroundControl.Palette           1.0
 import QGroundControl.Vehicle           1.0
 import QGroundControl.Controllers       1.0
+import QGroundControl.DhakshaCamera     1.0
 
 Item {
     id:     root
@@ -35,6 +36,8 @@ Item {
     property var    _camera:            _isCamera ? _dynamicCameras.cameras.get(_curCameraIndex) : null
     property bool   _hasZoom:           _camera && _camera.hasZoom
     property int    _fitMode:           QGroundControl.settingsManager.videoSettings.videoFit.rawValue
+    // DhakshaGroundControl: the fast player plays the main camera instead of QGC's receiver
+    property bool   _nativeVideo:       DhakshaCameraManager.nativeVideoActive
 
     property double _thermalHeightFactor: 0.85 //-- TODO
 
@@ -42,7 +45,7 @@ Item {
         id:             noVideo
         anchors.fill:   parent
         color:          Qt.rgba(0,0,0,0.75)
-        visible:        !(QGroundControl.videoManager.decoding)
+        visible:        !(QGroundControl.videoManager.decoding || _nativeVideo)
         QGCLabel {
             text:               QGroundControl.settingsManager.videoSettings.streamEnabled.rawValue ? qsTr("WAITING FOR VIDEO") : qsTr("VIDEO DISABLED")
             font.family:        ScreenTools.demiboldFontFamily
@@ -54,7 +57,7 @@ Item {
     Rectangle {
         anchors.fill:   parent
         color:          "black"
-        visible:        QGroundControl.videoManager.decoding
+        visible:        QGroundControl.videoManager.decoding || _nativeVideo
         function getWidth() {
             //-- Fit Width or Stretch
             if(_fitMode === 0 || _fitMode === 2) {
@@ -125,10 +128,46 @@ Item {
             height:             parent.getHeight()
             width:              parent.getWidth()
             anchors.centerIn:   parent
-            visible:            QGroundControl.videoManager.decoding
+            visible:            QGroundControl.videoManager.decoding && !_nativeVideo
             sourceComponent:    videoBackgroundComponent
 
             property bool videoDisabled: QGroundControl.settingsManager.videoSettings.videoSource.rawValue === QGroundControl.settingsManager.videoSettings.disabledVideoSource
+        }
+
+        // DhakshaGroundControl: fast player, each frame drawn straight from the hardware decoder
+        DhakshaVideoItem {
+            id:             dhakshaVideo
+            anchors.fill:   parent
+            visible:        _nativeVideo
+            source:         _nativeVideo ? DhakshaCameraManager.mainVideoUrl : ""
+            tcp:            DhakshaCameraManager.nativeTcp
+
+            function reportStatus() {
+                DhakshaCameraManager.nativeVideoStatus = !connected ? qsTr("Fast player: connecting to the camera")
+                    : !playing ? qsTr("Fast player: %1 over %2, waiting for video").arg(codecName).arg(transportName)
+                    : qsTr("%1 x %2, %3 fps, %4, %5 over %6, dropped %7 frames")
+                        .arg(videoSize.width).arg(videoSize.height).arg(fps)
+                        .arg(decoderName !== "" ? decoderName : qsTr("hardware decoder"))
+                        .arg(codecName).arg(transportName).arg(droppedFrames)
+            }
+
+            onPlayingChanged:   reportStatus()
+            onVideoSizeChanged: reportStatus()
+            onStatsChanged:     reportStatus()
+
+            Connections {
+                target:                         DhakshaCameraManager
+                function onVideoRestartRequested() { dhakshaVideo.restart() }
+            }
+
+            QGCLabel {
+                anchors.centerIn:   parent
+                visible:            !dhakshaVideo.playing
+                text:               qsTr("WAITING FOR VIDEO")
+                font.family:        ScreenTools.demiboldFontFamily
+                color:              "white"
+                font.pointSize:     useSmallFont ? ScreenTools.smallFontPointSize : ScreenTools.largeFontPointSize
+            }
         }
 
         //-- Thermal Image

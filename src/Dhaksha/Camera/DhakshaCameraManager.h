@@ -43,6 +43,13 @@ public:
     };
     Q_ENUM(VideoMode)
 
+    /// How the fast player receives the camera's video
+    enum NativeTransport {
+        NativeTransportTcp = 0, ///< Interleaved on the RTSP connection: nothing lost, the camera makers' default
+        NativeTransportUdp,
+    };
+    Q_ENUM(NativeTransport)
+
     Q_PROPERTY(QStringList          vendorNames READ vendorNames                    CONSTANT)
     Q_PROPERTY(int                  vendor      READ vendor     WRITE setVendor     NOTIFY vendorChanged)
     Q_PROPERTY(QString              cameraIp    READ cameraIp   WRITE setCameraIp   NOTIFY cameraIpChanged)
@@ -59,6 +66,13 @@ public:
     Q_PROPERTY(int  videoMode       READ videoMode      WRITE setVideoMode      NOTIFY videoModeChanged)       ///< VideoMode, saved per camera; used from the next apply()
     Q_PROPERTY(bool     streamForwardEnabled    READ streamForwardEnabled   WRITE setStreamForwardEnabled   NOTIFY streamForwardEnabledChanged)
     Q_PROPERTY(QString  streamForwardUrl        READ streamForwardUrl       WRITE setStreamForwardUrl       NOTIFY streamForwardUrlChanged)
+    Q_PROPERTY(bool nativeVideoSupported READ nativeVideoSupported CONSTANT)                                    ///< The fast player works on this platform (Android)
+    Q_PROPERTY(bool nativeVideo     READ nativeVideo    WRITE setNativeVideo    NOTIFY nativeVideoChanged)     ///< Fast player chosen in the settings, saved
+    Q_PROPERTY(bool nativeVideoActive READ nativeVideoActive                    NOTIFY nativeVideoChanged)     ///< The Fly View plays the main camera with the fast player
+    Q_PROPERTY(QString mainVideoUrl READ mainVideoUrl                           NOTIFY mainVideoUrlChanged)    ///< Camera stream on the main screen (day or night)
+    Q_PROPERTY(int  nativeTransport READ nativeTransport WRITE setNativeTransport NOTIFY nativeTransportChanged) ///< NativeTransport, saved; the fast player reconnects when it changes
+    Q_PROPERTY(bool nativeTcp       READ nativeTcp                              NOTIFY nativeTransportChanged)
+    Q_PROPERTY(QString nativeVideoStatus READ nativeVideoStatus WRITE setNativeVideoStatus NOTIFY nativeVideoStatusChanged) ///< What the fast player receives, set by the Fly View
 
     static DhakshaCameraManager* instance();
     static QObject* qmlSingletonFactory(QQmlEngine*, QJSEngine*);
@@ -87,6 +101,17 @@ public:
     DhakshaGimbalCamera*    camera      () const { return _camera; }
     bool                    streamForwardEnabled() const { return _streamForwardEnabled; }
     QString                 streamForwardUrl    () const { return _streamForwardUrl; }
+    static bool             nativeVideoSupported();
+    bool                    nativeVideo () const { return _nativeVideo; }
+    void                    setNativeVideo(bool native);
+    /// Stream to Server forwards the video through QGC's own receiver, so it keeps the Standard player
+    bool                    nativeVideoActive() const { return _nativeVideoActive; }
+    QString                 mainVideoUrl() const { return _mainVideoUrl; }
+    int                     nativeTransport() const { return _nativeTransport; }
+    void                    setNativeTransport(int transport);
+    bool                    nativeTcp() const { return _nativeTransport == NativeTransportTcp; }
+    QString                 nativeVideoStatus() const { return _nativeVideoStatus; }
+    void                    setNativeVideoStatus(const QString& status);
 
     /// Changing the vendor loads that vendor's saved IP / RTSP URL; call apply() to use them.
     void setVendor      (int vendor);
@@ -127,6 +152,12 @@ signals:
     void cameraChanged  ();
     void streamForwardEnabledChanged();
     void streamForwardUrlChanged    ();
+    void nativeVideoChanged();
+    void mainVideoUrlChanged();
+    void nativeTransportChanged();
+    void nativeVideoStatusChanged();
+    /// apply(): the fast player reconnects to the camera
+    void videoRestartRequested();
 
 private:
     explicit DhakshaCameraManager(QObject* parent = nullptr);
@@ -137,6 +168,7 @@ private:
     void _startVideoStream      ();
     void _showVideo             (const QString& rtspUrl);
     void _applyStreamForward    ();
+    void _applyNativeVideo      ();
     void _applyVideoMode        ();
     void _updatePipVideo        ();
 
@@ -150,4 +182,9 @@ private:
     DhakshaGimbalCamera*    _camera     = nullptr;
     bool                    _streamForwardEnabled = false;
     QString                 _streamForwardUrl;
+    bool                    _nativeVideo = true;
+    bool                    _nativeVideoActive = false;
+    QString                 _mainVideoUrl;
+    int                     _nativeTransport = NativeTransportTcp;
+    QString                 _nativeVideoStatus;
 };

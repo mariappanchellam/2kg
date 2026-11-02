@@ -5,6 +5,7 @@
  ****************************************************************************/
 
 #include "DhakshaCameraManager.h"
+#include "DhakshaNativePlayer.h"
 #include "SiyiGimbalCamera.h"
 #include "SkydroidGimbalCamera.h"
 
@@ -37,6 +38,8 @@ namespace {
     const char* kGimbalSpeedKey = "DhakshaCamera/gimbalMaxSpeed";
     const char* kThermalPaletteKey = "DhakshaCamera/thermalPalette";
     const char* kPipCameraKey   = "pipCamera";
+    const char* kNativeVideoKey = "nativeVideo";
+    const char* kNativeTransportKey = "nativeTransport";
 
     QString vendorKey(int vendor)
     {
@@ -76,6 +79,9 @@ DhakshaCameraManager::DhakshaCameraManager(QObject* parent)
     settings.setValue(kForwardKey, false);
     _streamForwardUrl = settings.value(kForwardUrlKey).toString();
     _pipCamera = settings.value(kPipCameraKey, true).toBool();
+    _nativeVideo = settings.value(kNativeVideoKey, true).toBool();
+    _nativeTransport = qBound(static_cast<int>(NativeTransportTcp), settings.value(kNativeTransportKey, NativeTransportTcp).toInt(),
+                              static_cast<int>(NativeTransportUdp));
     settings.endGroup();
     _loadVendorSettings();
 }
@@ -326,9 +332,56 @@ void DhakshaCameraManager::start()
 {
     _createCamera();
     _applyVideoMode();
+    _applyNativeVideo();
     _startVideoStream();
     _updatePipVideo();
     _applyStreamForward();
+    emit videoRestartRequested();
+}
+
+bool DhakshaCameraManager::nativeVideoSupported()
+{
+    return DhakshaNativePlayer::supported();
+}
+
+void DhakshaCameraManager::setNativeVideo(bool native)
+{
+    if (native != _nativeVideo) {
+        _nativeVideo = native;
+        QSettings settings;
+        settings.beginGroup(kSettingsGroup);
+        settings.setValue(kNativeVideoKey, native);
+        _applyNativeVideo();
+    }
+}
+
+void DhakshaCameraManager::setNativeTransport(int transport)
+{
+    transport = qBound(static_cast<int>(NativeTransportTcp), transport, static_cast<int>(NativeTransportUdp));
+    if (transport != _nativeTransport) {
+        _nativeTransport = transport;
+        QSettings settings;
+        settings.beginGroup(kSettingsGroup);
+        settings.setValue(kNativeTransportKey, transport);
+        emit nativeTransportChanged();
+    }
+}
+
+void DhakshaCameraManager::setNativeVideoStatus(const QString& status)
+{
+    if (status != _nativeVideoStatus) {
+        _nativeVideoStatus = status;
+        emit nativeVideoStatusChanged();
+    }
+}
+
+void DhakshaCameraManager::_applyNativeVideo()
+{
+    _nativeVideoActive = nativeVideoSupported() && _nativeVideo && (_vendor != VendorNone) && !_streamForwardEnabled;
+#ifndef DHAKSHA_CAMERA_NO_QGC
+    qgcApp()->toolbox()->videoManager()->setMainVideoExternal(_nativeVideoActive);
+#endif
+    emit nativeVideoChanged();
 }
 
 void DhakshaCameraManager::_createCamera()
@@ -370,6 +423,10 @@ void DhakshaCameraManager::_startVideoStream()
 
 void DhakshaCameraManager::_showVideo(const QString& rtspUrl)
 {
+    if (!rtspUrl.isEmpty() && (rtspUrl != _mainVideoUrl)) {
+        _mainVideoUrl = rtspUrl;
+        emit mainVideoUrlChanged();
+    }
 #ifndef DHAKSHA_CAMERA_NO_QGC
     if (rtspUrl.isEmpty()) {
         return;

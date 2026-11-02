@@ -42,6 +42,8 @@ Rectangle {
     property real   _comboFieldWidth:           ScreenTools.defaultFontPixelWidth * 30
     // DhakshaKey streams to the server, so the in-app forwarder's settings are hidden
     readonly property bool _showStreamToServer: false
+    // DhakshaGroundControl: the fast camera player is chosen (Android)
+    readonly property bool _fastPlayer: DhakshaCameraManager.nativeVideo && DhakshaCameraManager.nativeVideoSupported
     property real   _valueFieldWidth:           ScreenTools.defaultFontPixelWidth * 10
     property string _mapProvider:               QGroundControl.settingsManager.flightMapSettings.mapProvider.value
     property string _mapType:                   QGroundControl.settingsManager.flightMapSettings.mapType.value
@@ -423,9 +425,38 @@ Rectangle {
                                 onActivated:            DhakshaCameraManager.thermalPalette = index
                             }
 
-                            QGCLabel { text: qsTr("Video") }
+                            QGCLabel {
+                                text:       qsTr("Video Player")
+                                visible:    DhakshaCameraManager.nativeVideoSupported
+                            }
                             QGCComboBox {
                                 Layout.preferredWidth:  _comboFieldWidth * 1.6
+                                visible:                DhakshaCameraManager.nativeVideoSupported
+                                model:                  [ qsTr("Fast (hardware decoder straight to screen)"), qsTr("Standard (QGroundControl)") ]
+                                currentIndex:           DhakshaCameraManager.nativeVideo ? 0 : 1
+                                onActivated:            DhakshaCameraManager.nativeVideo = (index === 0)
+                            }
+
+                            // The fast player keeps no buffer; only how it receives the video can be chosen
+                            QGCLabel {
+                                text:       qsTr("Video Transport")
+                                visible:    _fastPlayer
+                            }
+                            QGCComboBox {
+                                Layout.preferredWidth:  _comboFieldWidth * 1.6
+                                visible:                _fastPlayer
+                                model:                  [ qsTr("TCP (recommended, nothing lost)"), qsTr("UDP") ]
+                                currentIndex:           DhakshaCameraManager.nativeTransport
+                                onActivated:            DhakshaCameraManager.nativeTransport = index
+                            }
+
+                            QGCLabel {
+                                text:       qsTr("Video")
+                                visible:    !_fastPlayer
+                            }
+                            QGCComboBox {
+                                Layout.preferredWidth:  _comboFieldWidth * 1.6
+                                visible:                !_fastPlayer
                                 model:                  [ qsTr("Low delay (UDP, 17 ms buffer)"), qsTr("Smooth (UDP, 150 ms buffer)"), qsTr("Reliable (TCP)") ]
                                 currentIndex:           DhakshaCameraManager.videoMode
                                 onActivated:            DhakshaCameraManager.videoMode = index
@@ -476,6 +507,15 @@ Rectangle {
                                     : !_camera.controlSupported ? qsTr("%1: video stream only").arg(_camera.vendorName)
                                     : _camera.connected ? qsTr("%1: connected").arg(_camera.vendorName)
                                     : qsTr("%1: no reply from camera").arg(_camera.vendorName)
+                            }
+
+                            QGCLabel {
+                                text:       qsTr("Received Video")
+                                visible:    DhakshaCameraManager.nativeVideoActive
+                            }
+                            QGCLabel {
+                                visible:    DhakshaCameraManager.nativeVideoActive
+                                text:       DhakshaCameraManager.nativeVideoStatus
                             }
 
                             QGCButton {

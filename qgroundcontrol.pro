@@ -392,6 +392,7 @@ INCLUDEPATH += \
     src/AnalyzeView \
     src/Camera \
     src/Dhaksha/Camera \
+    src/Dhaksha/Video \
     src/Compression \
     src/AutoPilotPlugins \
     src/FlightDisplay \
@@ -586,6 +587,9 @@ HEADERS += \
     src/Dhaksha/Camera/DhakshaGimbalCamera.h \
     src/Dhaksha/Camera/SkydroidGimbalCamera.h \
     src/Dhaksha/Camera/SiyiGimbalCamera.h \
+    src/Dhaksha/Video/DhakshaNativePlayer.h \
+    src/Dhaksha/Video/DhakshaRtspClient.h \
+    src/Dhaksha/Video/DhakshaVideoItem.h \
     src/CmdLineOptParser.h \
     src/Compression/QGCLZMA.h \
     src/Compression/QGCZlib.h \
@@ -845,6 +849,9 @@ SOURCES += \
     src/Dhaksha/Camera/DhakshaGimbalCamera.cc \
     src/Dhaksha/Camera/SkydroidGimbalCamera.cc \
     src/Dhaksha/Camera/SiyiGimbalCamera.cc \
+    src/Dhaksha/Video/DhakshaNativePlayer.cc \
+    src/Dhaksha/Video/DhakshaRtspClient.cc \
+    src/Dhaksha/Video/DhakshaVideoItem.cc \
     src/CmdLineOptParser.cc \
     src/Compression/QGCLZMA.cc \
     src/Compression/QGCZlib.cc \
@@ -1502,6 +1509,8 @@ contains (CONFIG, DISABLE_VIDEOSTREAMING) {
 # Android
 
 AndroidBuild {
+    # DhakshaGroundControl fast camera player: hardware decoder (mediandk) drawing on a surface (android)
+    LIBS += -lmediandk -landroid
     contains (CONFIG, DISABLE_BUILTIN_ANDROID) {
         message("Skipping builtin support for Android")
     } else {
