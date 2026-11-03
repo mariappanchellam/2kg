@@ -10,6 +10,7 @@
 #include "SkydroidGimbalCamera.h"
 
 #ifndef DHAKSHA_CAMERA_NO_QGC
+#include "DhakshaFlightLog.h"
 #include "QGCApplication.h"
 #include "QGCToolbox.h"
 #include "SettingsManager.h"
@@ -310,6 +311,15 @@ void DhakshaCameraManager::start()
     _startVideoStream();
     _updatePipVideo();
     emit videoRestartRequested();
+}
+
+QString DhakshaCameraManager::flightLogPath()
+{
+#ifndef DHAKSHA_CAMERA_NO_QGC
+    return DhakshaFlightLog::filePath();
+#else
+    return QString();
+#endif
 }
 
 bool DhakshaCameraManager::nativeVideoSupported()

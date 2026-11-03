@@ -972,7 +972,7 @@ bool DhakshaRtspSession::_connect()
     }
     freeaddrinfo(addresses);
     if (_tcp < 0) {
-        qCDebug(DhakshaRtspLog) << "Cannot connect to" << _host << _port;
+        qCInfo(DhakshaRtspLog) << "Cannot connect to" << _host << _port;
         return false;
     }
     return true;
@@ -1043,7 +1043,7 @@ bool DhakshaRtspSession::_readTcp()
         if ((count < 0) && ((errno == EAGAIN) || (errno == EWOULDBLOCK) || (errno == EINTR))) {
             return true;
         }
-        qCDebug(DhakshaRtspLog) << "Camera closed the connection";
+        qCInfo(DhakshaRtspLog) << "Camera closed the connection";
         _sessionLost = true;
         return false;
     }
@@ -1263,7 +1263,7 @@ void DhakshaRtspSession::_play()
         _tcpTransport ? DhakshaRtspClient::Transport::Tcp : DhakshaRtspClient::Transport::Udp,
         std::memory_order_release);
     _client._connected.store(true, std::memory_order_release);
-    qCDebug(DhakshaRtspLog) << "Playing" << _url << (_sdp.h265 ? "H.265" : "H.264") << "over"
+    qCInfo(DhakshaRtspLog) << "Playing" << _url << (_sdp.h265 ? "H.265" : "H.264") << "over"
                             << (_tcpTransport ? "TCP" : "UDP");
 
     const qint64 keepaliveMs = qMin<qint64>(kKeepaliveMs, qMax(5, _sessionTimeoutS / 2) * 1000LL);
@@ -1390,7 +1390,7 @@ void DhakshaRtspSession::_onAccessUnit(QByteArray accessUnit, bool keyFrame)
             return;
         }
         _formatSent = true;
-        qCDebug(DhakshaRtspLog) << "Video" << format.mime() << format.width << "x" << format.height;
+        qCInfo(DhakshaRtspLog) << "Video" << format.mime() << format.width << "x" << format.height;
         if (_client._callbacks.format) {
             _client._callbacks.format(format);
         }

@@ -88,6 +88,7 @@
 #include "FactValueSliderListModel.h"
 #include "ShapeFileHelper.h"
 #include "DhakshaCameraManager.h"
+#include "DhakshaFlightLog.h"
 #include "DhakshaVideoItem.h"
 #include "QGCFileDownload.h"
 #include "FirmwareImage.h"
@@ -432,6 +433,7 @@ void QGCApplication::_shutdown()
     delete _qmlAppEngine;
     delete _toolbox;
     delete _gpsRtkFactGroup;
+    DhakshaFlightLog::finish();
 }
 
 QGCApplication::~QGCApplication()
@@ -550,6 +552,9 @@ void QGCApplication::_initCommon()
 bool QGCApplication::_initForNormalAppBoot()
 {
     QSettings settings;
+
+    // Flight log for analysing field problems: in the app's Logs folder, kept even if the app crashes
+    DhakshaFlightLog::start(toolbox()->settingsManager()->appSettings()->logSavePath(), applicationVersion());
 
     // Load the configured gimbal camera and point the video stream at its RTSP URL before the UI starts
     DhakshaCameraManager::instance()->start();

@@ -71,6 +71,7 @@ public:
     Q_PROPERTY(int  nativeTransport READ nativeTransport WRITE setNativeTransport NOTIFY nativeTransportChanged) ///< NativeTransport, saved; the fast player reconnects when it changes
     Q_PROPERTY(bool nativeTcp       READ nativeTcp                              NOTIFY nativeTransportChanged)
     Q_PROPERTY(QString nativeVideoStatus READ nativeVideoStatus WRITE setNativeVideoStatus NOTIFY nativeVideoStatusChanged) ///< What the fast player receives, set by the Fly View
+    Q_PROPERTY(QString flightLogPath     READ flightLogPath     CONSTANT)   ///< This run's flight log file (opened before the UI)
 
     static DhakshaCameraManager* instance();
     static QObject* qmlSingletonFactory(QQmlEngine*, QJSEngine*);
@@ -106,6 +107,7 @@ public:
     void                    setNativeTransport(int transport);
     bool                    nativeTcp() const { return _nativeTransport == NativeTransportTcp; }
     QString                 nativeVideoStatus() const { return _nativeVideoStatus; }
+    static QString          flightLogPath();
     void                    setNativeVideoStatus(const QString& status);
 
     /// Changing the vendor loads that vendor's saved IP / RTSP URL; call apply() to use them.

@@ -139,6 +139,9 @@ public:
 
     bool connected() const { return _client.connected(); }
 
+    /// RTP packets the camera sent that never arrived, for this connection
+    quint64 packetsLost() const { return _client.packetsLost(); }
+
     QString codecName() const;
     QString transportName() const;
 

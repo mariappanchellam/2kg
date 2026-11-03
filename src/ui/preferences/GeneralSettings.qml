@@ -491,6 +491,13 @@ Rectangle {
                                 text:       DhakshaCameraManager.nativeVideoStatus
                             }
 
+                            QGCLabel { text: qsTr("Flight Log") }
+                            QGCLabel {
+                                Layout.maximumWidth:    _comboFieldWidth * 1.6
+                                wrapMode:               Text.WrapAnywhere
+                                text:                   DhakshaCameraManager.flightLogPath !== "" ? DhakshaCameraManager.flightLogPath : qsTr("Not available")
+                            }
+
                             QGCButton {
                                 text:       qsTr("Restore Defaults")
                                 enabled:    DhakshaCameraManager.vendor !== 0

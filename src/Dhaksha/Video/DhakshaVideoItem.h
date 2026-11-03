@@ -94,6 +94,7 @@ private:
     QString _codecName;
     QString _transportName;
     quint64 _lastFrames = 0;
+    int _statusTicks = 0;
     QElapsedTimer _sinceStatus;
     QTimer _restartTimer;
     QTimer _statusTimer;

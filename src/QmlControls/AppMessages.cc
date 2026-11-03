@@ -16,6 +16,7 @@
 #include "QGCApplication.h"
 #include "SettingsManager.h"
 #include "AppSettings.h"
+#include "DhakshaFlightLog.h"
 
 #include <QStringListModel>
 #include <QtConcurrent>
@@ -33,6 +34,12 @@ static void msgHandler(QtMsgType type, const QMessageLogContext &context, const 
     // Avoid recursion
     if (!QString(context.category).startsWith("qt.quick")) {
         debug_model->log(output);
+    }
+
+    // DhakshaGroundControl: warnings and information from everywhere, and the debug lines of the Dhaksha camera
+    // code when enabled, go to the flight log for analysing field problems
+    if ((type != QtDebugMsg) || QByteArray(context.category).startsWith("Dhaksha")) {
+        DhakshaFlightLog::write(QStringLiteral("[%1] %2: %3").arg(symbols[type]).arg(QString::fromLatin1(context.category), msg));
     }
 
     if (old_handler != nullptr) {

@@ -4,6 +4,7 @@
 #include <QtQuick/QSGRendererInterface>
 #include <limits>
 
+#include "DhakshaFlightLog.h"
 #include "DhakshaNativePlayer.h"
 
 #if defined(__android__) || defined(Q_OS_ANDROID)
@@ -416,9 +417,14 @@ void DhakshaVideoItem::restart()
     _restartTimer.stop();
     if (isVisible() && window() && !_source.isEmpty() && supported()) {
         _player->start(_source, _tcp);
+        DhakshaFlightLog::write(QStringLiteral("Video: fast player started for %1 over %2").arg(_source, _tcp ? QStringLiteral("TCP") : QStringLiteral("UDP")));
+        _statusTicks = 0;
         _statusTimer.start();
         _sinceStatus.start();
     } else {
+        if (_player->running()) {
+            DhakshaFlightLog::write(QStringLiteral("Video: fast player stopped"));
+        }
         _player->stop();
         _statusTimer.stop();
     }
@@ -460,6 +466,20 @@ void DhakshaVideoItem::_updateStatus()
     if (playing != _playing) {
         _playing = playing;
         emit playingChanged();
+        DhakshaFlightLog::write(playing ? QStringLiteral("Video: picture running") : QStringLiteral("Video: picture STOPPED"));
+    }
+    // Every 5 s while playing: the numbers needed to line a video problem up with the flight
+    if ((++_statusTicks % 5) == 0) {
+        const QSize videoSize = decoder->videoSize();
+        DhakshaFlightLog::write(QStringLiteral("Video stats: %1 %2 %3 %4x%5, %6 fps, rendered %7, dropped %8, lost packets %9, decoder %10")
+                                    .arg(connected ? QStringLiteral("connected") : QStringLiteral("NOT connected"), transport, codec)
+                                    .arg(videoSize.width())
+                                    .arg(videoSize.height())
+                                    .arg(fps)
+                                    .arg(frames)
+                                    .arg(decoder->framesDropped())
+                                    .arg(_player->packetsLost())
+                                    .arg(decoder->decoderName().isEmpty() ? QStringLiteral("none") : decoder->decoderName()));
     }
     const QSize size = decoder->videoSize();
     const QString name = decoder->decoderName();

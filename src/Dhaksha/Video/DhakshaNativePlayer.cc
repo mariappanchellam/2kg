@@ -286,7 +286,7 @@ void DhakshaDecoderCore::_openCodec()
         // A fresh decoder must start at a key frame
         _skipToKeyFrameLocked();
     }
-    qCDebug(DhakshaNativeVideoLog) << "Decoding" << format.mime() << width << "x" << height;
+    qCInfo(DhakshaNativeVideoLog) << "Decoding" << format.mime() << width << "x" << height;
 #endif
 }
 
@@ -446,7 +446,7 @@ void DhakshaNativePlayer::start(const QString& url, bool tcp)
     _client.start(url, tcp ? DhakshaRtspClient::Transport::Tcp : DhakshaRtspClient::Transport::Udp,
                   std::move(callbacks));
     _running = true;
-    qCDebug(DhakshaNativeVideoLog) << "Playing" << url << (tcp ? "over TCP" : "over UDP");
+    qCInfo(DhakshaNativeVideoLog) << "Playing" << url << (tcp ? "over TCP" : "over UDP");
 }
 
 void DhakshaNativePlayer::stop()
