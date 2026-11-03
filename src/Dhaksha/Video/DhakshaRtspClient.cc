@@ -41,6 +41,8 @@ constexpr int kSocketBufferBytes = 1024 * 1024;
 constexpr int kMaxMessageBytes = 256 * 1024;
 // Older packets than this are late duplicates; further back the camera restarted its numbering
 constexpr int kMaxMisorder = 100;
+// Far above any camera frame: a frame this big can only come from corrupt or endless data and is dropped
+constexpr int kMaxAccessUnitBytes = 8 * 1024 * 1024;
 constexpr char kUserAgent[] = "DhakshaGroundControl";
 
 const QByteArray kStartCode("\x00\x00\x00\x01", 4);
@@ -452,10 +454,14 @@ void DhakshaRtpDepacketizer::push(const uint8_t* data, size_t size)
         }
         offset += 4 + (static_cast<size_t>(read16(data + offset + 2)) * 4);
     }
+    // A corrupt header can claim more CSRC or extension words than the packet holds
+    if (offset >= size) {
+        return;
+    }
     size_t end = size;
     if (padding) {
         const size_t paddingBytes = data[size - 1];
-        if (paddingBytes > (size - offset)) {
+        if (paddingBytes >= (size - offset)) {
             return;
         }
         end -= paddingBytes;
@@ -535,6 +541,11 @@ void DhakshaRtpDepacketizer::_pushH264(const uint8_t* payload, size_t size)
             _fragment.append(static_cast<char>((payload[0] & 0xE0) | (header & 0x1F)));
             _fragmentActive = true;
         }
+        if (_fragmentActive && ((_fragment.size() + static_cast<int>(size)) > kMaxAccessUnitBytes)) {
+            qCWarning(DhakshaRtspLog) << "Dropped an oversized H.264 fragment";
+            _fragment.clear();
+            _fragmentActive = false;
+        }
         if (_fragmentActive) {
             _fragment.append(reinterpret_cast<const char*>(payload + 2), static_cast<int>(size - 2));
             if (header & 0x40) {
@@ -574,6 +585,11 @@ void DhakshaRtpDepacketizer::_pushH265(const uint8_t* payload, size_t size)
             _fragment.append(static_cast<char>(payload[1]));
             _fragmentActive = true;
         }
+        if (_fragmentActive && ((_fragment.size() + static_cast<int>(size)) > kMaxAccessUnitBytes)) {
+            qCWarning(DhakshaRtspLog) << "Dropped an oversized H.265 fragment";
+            _fragment.clear();
+            _fragmentActive = false;
+        }
         if (_fragmentActive) {
             _fragment.append(reinterpret_cast<const char*>(payload + 3), static_cast<int>(size - 3));
             if (header & 0x40) {
@@ -587,6 +603,13 @@ void DhakshaRtpDepacketizer::_pushH265(const uint8_t* payload, size_t size)
 void DhakshaRtpDepacketizer::_addNal(const uint8_t* nal, size_t size)
 {
     if (size == 0) {
+        return;
+    }
+    if ((_accessUnit.size() + static_cast<int>(size)) > kMaxAccessUnitBytes) {
+        // Only corrupt or endless data gets here: drop what was collected so memory stays bounded
+        qCWarning(DhakshaRtspLog) << "Dropped an oversized video frame";
+        _accessUnit.clear();
+        _keyFrame = false;
         return;
     }
     const QByteArray unit(reinterpret_cast<const char*>(nal), static_cast<int>(size));
