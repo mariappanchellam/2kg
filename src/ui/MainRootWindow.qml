@@ -516,6 +516,15 @@ ApplicationWindow {
         property alias toolSource:  toolDrawerLoader.source
         property alias toolIcon:    toolIcon.source
 
+        // Dhaksha skin: navy gradient background
+        background: Rectangle {
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "#123578" }
+                GradientStop { position: 0.55; color: "#0a1d4a" }
+                GradientStop { position: 1.0; color: "#050f2a" }
+            }
+        }
+
         Rectangle {
             id:             toolDrawerToolbar
             anchors.left:   parent.left

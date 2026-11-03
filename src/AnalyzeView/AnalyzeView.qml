@@ -20,6 +20,12 @@ import QGroundControl.ScreenTools   1.0
 Rectangle {
     id:     _root
     color:  qgcPal.window
+    // Dhaksha skin: navy gradient background
+    gradient: Gradient {
+        GradientStop { position: 0.0; color: "#123578" }
+        GradientStop { position: 0.55; color: "#0a1d4a" }
+        GradientStop { position: 1.0; color: "#050f2a" }
+    }
     z:      QGroundControl.zOrderTopMost
 
     signal popout()

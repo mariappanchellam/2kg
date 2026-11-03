@@ -38,7 +38,7 @@ Button {
         implicitHeight: ScreenTools.implicitButtonHeight
         radius:         backRadius
         border.width:   showBorder ? 1 : 0
-        border.color:   qgcPal.buttonText
+        border.color:   qgcPal.buttonBorder
         color:          _showHighlight ?
                             qgcPal.buttonHighlight :
                             (primary ? qgcPal.primaryButton : qgcPal.button)

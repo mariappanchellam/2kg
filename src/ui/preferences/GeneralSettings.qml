@@ -84,6 +84,7 @@ Rectangle {
 
                     QGCLabel {
                         id:         flyViewSectionLabel
+                        color:      QGroundControl.globalPalette.buttonBorder   // Dhaksha skin: yellow section headings
                         text:       qsTr("Fly View")
                         visible:    QGroundControl.settingsManager.flyViewSettings.visible
                     }
@@ -357,6 +358,7 @@ Rectangle {
                     Item { width: 1; height: _margins }
                     QGCLabel {
                         id:         gimbalCameraSectionLabel
+                        color:      QGroundControl.globalPalette.buttonBorder   // Dhaksha skin: yellow section headings
                         text:       qsTr("Gimbal Camera")
                     }
                     Rectangle {
@@ -505,6 +507,7 @@ Rectangle {
                     Item { width: 1; height: _margins; visible: planViewSectionLabel.visible }
                     QGCLabel {
                         id:         planViewSectionLabel
+                        color:      QGroundControl.globalPalette.buttonBorder   // Dhaksha skin: yellow section headings
                         text:       qsTr("Plan View")
                         visible:    _planViewSettings.visible
                     }
@@ -556,6 +559,7 @@ Rectangle {
                     Item { width: 1; height: _margins; visible: unitsSectionLabel.visible }
                     QGCLabel {
                         id:         unitsSectionLabel
+                        color:      QGroundControl.globalPalette.buttonBorder   // Dhaksha skin: yellow section headings
                         text:       qsTr("Units")
                         visible:    QGroundControl.settingsManager.unitsSettings.visible
                     }
@@ -593,6 +597,7 @@ Rectangle {
                     Item { width: 1; height: _margins; visible: miscSectionLabel.visible }
                     QGCLabel {
                         id:         miscSectionLabel
+                        color:      QGroundControl.globalPalette.buttonBorder   // Dhaksha skin: yellow section headings
                         text:       qsTr("Miscellaneous")
                         visible:    QGroundControl.settingsManager.appSettings.visible
                     }
@@ -834,6 +839,7 @@ Rectangle {
                     Item { width: 1; height: _margins; visible: telemetryLogSectionLabel.visible }
                     QGCLabel {
                         id:         telemetryLogSectionLabel
+                        color:      QGroundControl.globalPalette.buttonBorder   // Dhaksha skin: yellow section headings
                         text:       qsTr("Telemetry Logs from Vehicle")
                         visible:    telemetryRect.visible
                     }
@@ -880,6 +886,7 @@ Rectangle {
                     Item { width: 1; height: _margins; visible: autoConnectSectionLabel.visible }
                     QGCLabel {
                         id:         autoConnectSectionLabel
+                        color:      QGroundControl.globalPalette.buttonBorder   // Dhaksha skin: yellow section headings
                         text:       qsTr("AutoConnect to the following devices")
                         visible:    QGroundControl.settingsManager.autoConnectSettings.visible
                     }
@@ -996,6 +1003,7 @@ Rectangle {
                     Item { width: 1; height: _margins; visible: rtkSectionLabel.visible }
                     QGCLabel {
                         id:         rtkSectionLabel
+                        color:      QGroundControl.globalPalette.buttonBorder   // Dhaksha skin: yellow section headings
                         text:       qsTr("RTK GPS")
                         visible:    QGroundControl.settingsManager.rtkSettings.visible
                     }
@@ -1130,6 +1138,7 @@ Rectangle {
                     Item { width: 1; height: _margins; visible: adsbSectionLabel.visible }
                     QGCLabel {
                         id:         adsbSectionLabel
+                        color:      QGroundControl.globalPalette.buttonBorder   // Dhaksha skin: yellow section headings
                         text:       qsTr("ADSB Server")
                         visible:    QGroundControl.settingsManager.adsbVehicleManagerSettings.visible
                     }
@@ -1193,6 +1202,7 @@ Rectangle {
                     Item { width: 1; height: _margins; visible: brandImageSectionLabel.visible }
                     QGCLabel {
                         id:         brandImageSectionLabel
+                        color:      QGroundControl.globalPalette.buttonBorder   // Dhaksha skin: yellow section headings
                         text:       qsTr("Brand Image")
                         visible:    QGroundControl.settingsManager.brandImageSettings.visible && !ScreenTools.isMobile
                     }
