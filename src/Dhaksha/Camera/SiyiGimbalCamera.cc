@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * DhakshaGroundControl: SIYI ZR10 gimbal camera on the RC's Ethernet.
+ * DhakshaGroundControl: SIYI A8 mini gimbal camera on the RC's Ethernet.
  *
  ****************************************************************************/
 
@@ -25,14 +25,14 @@ namespace {
 }
 
 SiyiGimbalCamera::SiyiGimbalCamera(const QString& cameraIp, const QString& rtspUrl, QObject* parent)
-    : DhakshaGimbalCamera   (QStringLiteral("ZR10"), rtspUrl, parent)
+    : DhakshaGimbalCamera   (QStringLiteral("A8 mini"), rtspUrl, parent)
     , _socket               (new QUdpSocket(this))
     , _cameraAddress        (cameraIp)
 {
     // The camera answers to the port the request came from, so any free local port works
     _socket->bind(QHostAddress(QHostAddress::AnyIPv4), 0);
     connect(_socket, &QUdpSocket::readyRead, this, &SiyiGimbalCamera::_readBytes);
-    _logCommand(tr("ZR10 control to %1:%2").arg(cameraIp).arg(kControlPort));
+    _logCommand(tr("A8 mini control to %1:%2").arg(cameraIp).arg(kControlPort));
 
     _pollTimer.setInterval(kPollIntervalMs);
     connect(&_pollTimer, &QTimer::timeout, this, &SiyiGimbalCamera::_pollStatus);

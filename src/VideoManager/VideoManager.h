@@ -111,10 +111,6 @@ public:
 
     Q_INVOKABLE void grabImage(const QString& imageFile = QString());
 
-    /// DhakshaGroundControl: RTSP address shown in the picture-in-picture box (the camera not on the main
-    /// screen), played by the second receiver; empty stops it. Used when no MAVLink camera gives a thermal stream.
-    void setSecondaryRtspUrl(const QString& url);
-
     /// DhakshaGroundControl: the main camera is played by the fast player (DhakshaVideoItem), so QGC's own
     /// receiver leaves it alone; the video settings stay as they are
     void setMainVideoExternal(bool external);
@@ -166,7 +162,6 @@ protected:
     VideoReceiver*          _videoReceiver[2]       = { nullptr, nullptr };
     void*                   _videoSink[2]           = { nullptr, nullptr };
     QString                 _videoUri[2];
-    QString                 _secondaryRtspUrl;
     bool                    _mainVideoExternal = false;
     // FIXME: AV: _videoStarted seems to be access from 3 different threads, from time to time
     // 1) Video Receiver thread

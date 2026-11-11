@@ -9,7 +9,7 @@
  *                gimbal turns, up to the speed set under settings)
  *   right:       centre, tilt down 90, zoom in / out and settings, just under
  *                the HUD
- *   top centre:  connection, day / night camera (when there is a night camera)
+ *   top centre:  connection
  * A small label under the top row shows recording time and other
  * confirmations. Works with any DhakshaGimbalCamera; the vendor protocol
  * lives in the C++ camera classes.
@@ -152,16 +152,6 @@ Item {
                 height:                 width
                 radius:                 width / 2
                 color:                  _camera && _camera.connected ? "lime" : "red"
-            }
-            IconButton {
-                width:          _smallButton
-                visible:        DhakshaCameraManager.nightRtspUrl !== ""
-                icon:           DhakshaCameraManager.nightView ? "day" : "night"
-                active:         DhakshaCameraManager.nightView
-                clickAction:    function() {
-                    DhakshaCameraManager.toggleNightView()
-                    notify(DhakshaCameraManager.nightView ? qsTr("Night camera") : qsTr("Day camera"))
-                }
             }
         }
 
@@ -372,7 +362,7 @@ Item {
         }
     }
 
-    // ------------------------------------------------------------------ Settings: gimbal speed and night palette
+    // ------------------------------------------------------------------ Settings: gimbal speed
 
     Rectangle {
         id:             speedSettings
@@ -435,28 +425,6 @@ Item {
                         onMoved:    speedSettings._speed = Math.round(value)
                     }
                     QGCLabel { anchors.verticalCenter: parent.verticalCenter; text: "60"; color: "white" }
-                }
-                // Night (thermal) camera colours; sent at once so the effect shows on the video, also kept in
-                // Application Settings > General > Gimbal Camera
-                Row {
-                    anchors.horizontalCenter:   parent.horizontalCenter
-                    spacing:                    _margin
-                    visible:                    _camera && _camera.thermalPaletteSupported
-                    QGCLabel {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text:                   qsTr("Night palette")
-                        color:                  "white"
-                        font.bold:              true
-                    }
-                    QGCComboBox {
-                        width:          ScreenTools.defaultFontPixelWidth * 18
-                        model:          DhakshaCameraManager.thermalPaletteNames
-                        currentIndex:   DhakshaCameraManager.thermalPalette
-                        onActivated: {
-                            DhakshaCameraManager.thermalPalette = index
-                            notify(qsTr("Night palette: %1").arg(DhakshaCameraManager.thermalPaletteNames[index]))
-                        }
-                    }
                 }
                 Row {
                     anchors.horizontalCenter:   parent.horizontalCenter

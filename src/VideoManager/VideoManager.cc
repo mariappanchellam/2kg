@@ -592,11 +592,7 @@ VideoManager::_initVideo()
         qCDebug(VideoManagerLog) << "video receiver disabled";
     }
 
-    // DhakshaGroundControl: the picture-in-picture camera box, else QGC's thermal overlay
-    widget = root->findChild<QQuickItem*>("dhakshaPipVideo");
-    if (widget == nullptr) {
-        widget = root->findChild<QQuickItem*>("thermalVideo");
-    }
+    widget = root->findChild<QQuickItem*>("thermalVideo");
 
     if (widget != nullptr && _videoReceiver[1] != nullptr) {
         _videoSink[1] = qgcApp()->toolbox()->corePlugin()->createVideoSink(this, widget);
@@ -695,10 +691,6 @@ VideoManager::_updateSettings(unsigned id)
             return settingsChanged;
         }
     }
-    if (id == 1) {
-        // DhakshaGroundControl: the second camera for the picture-in-picture box
-        return _updateVideoUri(1, _secondaryRtspUrl) || settingsChanged;
-    }
     QString source = _videoSettings->videoSource()->rawValue().toString();
     if (source == VideoSettings::videoSourceUDPH264)
         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
@@ -718,17 +710,6 @@ VideoManager::_updateSettings(unsigned id)
         settingsChanged |= _updateVideoUri(0, QStringLiteral("rtsp://192.168.42.1:554/live"));
 
     return settingsChanged;
-}
-
-//-----------------------------------------------------------------------------
-void
-VideoManager::setSecondaryRtspUrl(const QString& url)
-{
-    if (url == _secondaryRtspUrl) {
-        return;
-    }
-    _secondaryRtspUrl = url;
-    _restartVideo(1);
 }
 
 //-----------------------------------------------------------------------------

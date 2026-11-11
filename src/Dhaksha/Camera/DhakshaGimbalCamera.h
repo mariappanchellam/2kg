@@ -2,7 +2,7 @@
  *
  * DhakshaGroundControl: vendor-neutral gimbal camera interface.
  *
- * One interface for every supported payload vendor (SIYI, ViewPro, Skydroid).
+ * One interface for the gimbal camera (this build: the SIYI A8 mini).
  * The QML camera controls only talk to this class; each vendor subclass
  * translates the calls into its own control protocol. Only one camera is
  * connected to the drone at a time, so DhakshaCameraManager owns a single
@@ -30,7 +30,6 @@ public:
     Q_PROPERTY(bool     recording           READ recording          NOTIFY recordingChanged)
     Q_PROPERTY(QStringList commandLog       READ commandLog         NOTIFY commandLogChanged)  ///< Newest first; lets the operator verify commands without the camera
     Q_PROPERTY(bool     rangefinderSupported READ rangefinderSupported CONSTANT)   ///< Laser rangefinder (e.g. Skydroid C13)
-    Q_PROPERTY(bool     thermalPaletteSupported READ thermalPaletteSupported CONSTANT) ///< Night (thermal) camera colour palettes
     Q_PROPERTY(QString  distanceText        READ distanceText       NOTIFY distanceTextChanged) ///< Last laser range, e.g. "123.4 m"; empty before the first
     Q_PROPERTY(bool     rangingActive       READ rangingActive      NOTIFY rangingActiveChanged)    ///< Continuous laser ranging on
     Q_PROPERTY(QString  sdCardStatus        READ sdCardStatus       NOTIFY sdCardStatusChanged)     ///< "" unknown, "ok", "none" (missing or error), "full"
@@ -50,7 +49,6 @@ public:
 
     virtual bool controlSupported() const { return false; }
     virtual bool rangefinderSupported() const { return false; }
-    virtual bool thermalPaletteSupported() const { return false; }
 
     Q_INVOKABLE void clearCommandLog();
 
@@ -59,15 +57,10 @@ public:
     Q_INVOKABLE virtual void startRecording     () {}
     Q_INVOKABLE virtual void stopRecording      () {}
     Q_INVOKABLE void         toggleRecording    () { _recording ? stopRecording() : startRecording(); }
-    Q_INVOKABLE virtual void toggleDayNight     () {}
-    /// 0 = main only, 1 = main + sub, 2 = sub + main, 3 = sub only
-    Q_INVOKABLE virtual void setPipMode         (int /*mode*/) {}
     /// One laser range measurement; the answer arrives in distanceText
     Q_INVOKABLE virtual void measureDistance    () {}
     /// Continuous laser ranging on / off; the distance keeps updating in distanceText
     Q_INVOKABLE virtual void toggleRanging      () {}
-    /// Night (thermal) camera colour palette, an index into DhakshaCameraManager::thermalPaletteNames
-    Q_INVOKABLE virtual void setThermalPalette  (int /*palette*/) {}
 
     // Lens
     Q_INVOKABLE virtual void zoomIn             () {}

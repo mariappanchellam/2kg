@@ -161,12 +161,4 @@ Item {
         show:                   !QGroundControl.videoManager.fullScreen &&
                                     (videoControl.pipState.state === videoControl.pipState.pipState || mapControl.pipState.state === mapControl.pipState.pipState)
     }
-
-    // DhakshaGroundControl: the other camera (day / night) in the PiP box while the video is on the main screen
-    DhakshaPipCamera {
-        anchors.fill:   _pipOverlay
-        z:              _pipItemZorder + 1
-        boxShown:       _pipOverlay.visible && _pipOverlay.show && _pipOverlay._isExpanded &&
-                        videoControl.pipState.state === videoControl.pipState.fullState
-    }
 }

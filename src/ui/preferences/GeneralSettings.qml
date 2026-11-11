@@ -376,14 +376,8 @@ Rectangle {
                             rowSpacing:                 _margins
                             columnSpacing:              _margins
 
-                            QGCLabel { text: qsTr("Camera Vendor") }
-                            QGCComboBox {
-                                Layout.preferredWidth:  _comboFieldWidth
-                                // The fleet's two cameras: Skydroid (vendor 1) and SIYI ZR10 (vendor 2)
-                                model:                  [ "Skydroid", "ZR10" ]
-                                currentIndex:           DhakshaCameraManager.vendor - 1
-                                onActivated:            DhakshaCameraManager.vendor = index + 1
-                            }
+                            QGCLabel { text: qsTr("Camera") }
+                            QGCLabel { text: qsTr("SIYI A8 mini") }
 
                             QGCLabel { text: qsTr("Camera IP") }
                             QGCTextField {
@@ -399,30 +393,6 @@ Rectangle {
                                 text:                   DhakshaCameraManager.rtspUrl
                                 enabled:                DhakshaCameraManager.vendor !== 0
                                 onEditingFinished:      DhakshaCameraManager.rtspUrl = text
-                            }
-
-                            QGCLabel {
-                                text:       qsTr("Gimbal Command")
-                                visible:    DhakshaCameraManager.vendor === 1
-                            }
-                            QGCComboBox {
-                                Layout.preferredWidth:  _comboFieldWidth
-                                visible:                DhakshaCameraManager.vendor === 1
-                                model:                  [ qsTr("YPR (other Topotek cameras)"), qsTr("GSY / GSP (Skydroid C10 / C13)") ]
-                                currentIndex:           DhakshaCameraManager.skydroidGimbalStyle
-                                onActivated:            DhakshaCameraManager.skydroidGimbalStyle = index
-                            }
-
-                            QGCLabel {
-                                text:       qsTr("Night Palette")
-                                visible:    DhakshaCameraManager.vendor === 1
-                            }
-                            QGCComboBox {
-                                Layout.preferredWidth:  _comboFieldWidth
-                                visible:                DhakshaCameraManager.vendor === 1
-                                model:                  DhakshaCameraManager.thermalPaletteNames
-                                currentIndex:           DhakshaCameraManager.thermalPalette
-                                onActivated:            DhakshaCameraManager.thermalPalette = index
                             }
 
                             QGCLabel {
@@ -460,15 +430,6 @@ Rectangle {
                                 model:                  [ qsTr("Low delay (UDP, 17 ms buffer)"), qsTr("Smooth (UDP, 150 ms buffer)"), qsTr("Reliable (TCP)") ]
                                 currentIndex:           DhakshaCameraManager.videoMode
                                 onActivated:            DhakshaCameraManager.videoMode = index
-                            }
-
-                            QGCLabel { text: qsTr("Night RTSP URL") }
-                            QGCTextField {
-                                Layout.preferredWidth:  _comboFieldWidth * 1.6
-                                text:                   DhakshaCameraManager.nightRtspUrl
-                                placeholderText:        qsTr("Thermal camera, if any")
-                                enabled:                DhakshaCameraManager.vendor !== 0
-                                onEditingFinished:      DhakshaCameraManager.nightRtspUrl = text
                             }
 
                             QGCLabel {

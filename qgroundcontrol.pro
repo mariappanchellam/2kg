@@ -585,7 +585,6 @@ HEADERS += \
     src/Camera/QGCCameraManager.h \
     src/Dhaksha/Camera/DhakshaCameraManager.h \
     src/Dhaksha/Camera/DhakshaGimbalCamera.h \
-    src/Dhaksha/Camera/SkydroidGimbalCamera.h \
     src/Dhaksha/Camera/SiyiGimbalCamera.h \
     src/Dhaksha/Video/DhakshaFlightLog.h \
     src/Dhaksha/Video/DhakshaNativePlayer.h \
@@ -848,7 +847,6 @@ SOURCES += \
     src/Camera/QGCCameraManager.cc \
     src/Dhaksha/Camera/DhakshaCameraManager.cc \
     src/Dhaksha/Camera/DhakshaGimbalCamera.cc \
-    src/Dhaksha/Camera/SkydroidGimbalCamera.cc \
     src/Dhaksha/Camera/SiyiGimbalCamera.cc \
     src/Dhaksha/Video/DhakshaFlightLog.cc \
     src/Dhaksha/Video/DhakshaNativePlayer.cc \

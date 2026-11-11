@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * DhakshaGroundControl: SIYI ZR10 gimbal camera on the RC's Ethernet.
+ * DhakshaGroundControl: SIYI A8 mini gimbal camera on the RC's Ethernet.
  *
  * Controlled directly with SIYI's own gimbal camera protocol, as the SIYI FPV
  * app does, over UDP to the camera (default 192.168.144.25:37260); nothing

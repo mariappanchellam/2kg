@@ -152,7 +152,7 @@ Item {
         property bool _verticalCenter: !QGroundControl.settingsManager.flyViewSettings.alternateInstrumentPanel.rawValue
     }
 
-    // DhakshaGroundControl: gimbal camera controls (SIYI / ViewPro / Skydroid), split around the screen edges
+    // DhakshaGroundControl: gimbal camera controls (SIYI A8 mini), split around the screen edges
     DhakshaCameraControls {
         id:                 cameraControls
         anchors.fill:       parent

@@ -2,13 +2,11 @@
  *
  * DhakshaGroundControl: owns the single active gimbal camera.
  *
- * The operator picks the camera (Skydroid or SIYI ZR10) plus its IP and
- * RTSP URL once; the choice is stored when applied and, on every start-up,
- * the manager creates the matching DhakshaGimbalCamera and points QGC's video
- * stream at the camera's RTSP URL so video starts automatically. Until a
- * camera has been applied the vendor is None and QGC's own video settings are
- * left untouched. Sending the video to a server is done by the DhakshaKey
- * (Termux) app, not here.
+ * This build flies one camera, the SIYI A8 mini (a day camera on a 3-axis
+ * gimbal). Its IP and RTSP URL are stored when applied and, on every start-up,
+ * the manager creates the camera and points QGC's video stream at its RTSP URL
+ * so video starts automatically. Sending the video to a server is done by the
+ * DhakshaKey (Termux) app, not here.
  *
  ****************************************************************************/
 
@@ -29,8 +27,7 @@ class DhakshaCameraManager : public QObject
 public:
     enum Vendor {
         VendorNone = 0,
-        VendorSkydroid,
-        VendorZr10,             ///< SIYI ZR10 on the RC's Ethernet, SIYI's own protocol
+        VendorA8Mini,           ///< SIYI A8 mini on the RC's Ethernet, SIYI's own protocol
         VendorCount
     };
     Q_ENUM(Vendor)
@@ -54,20 +51,13 @@ public:
     Q_PROPERTY(int                  vendor      READ vendor     WRITE setVendor     NOTIFY vendorChanged)
     Q_PROPERTY(QString              cameraIp    READ cameraIp   WRITE setCameraIp   NOTIFY cameraIpChanged)
     Q_PROPERTY(QString              rtspUrl     READ rtspUrl    WRITE setRtspUrl    NOTIFY rtspUrlChanged)
-    Q_PROPERTY(QString              nightRtspUrl READ nightRtspUrl WRITE setNightRtspUrl NOTIFY nightRtspUrlChanged)   ///< Thermal camera; empty when there is none
-    Q_PROPERTY(bool                 nightView   READ nightView                      NOTIFY nightViewChanged)    ///< Night video on screen
-    Q_PROPERTY(bool     pipAvailable    READ pipAvailable                       NOTIFY pipAvailableChanged)     ///< The camera has a second (night / day) stream for the PiP box
-    Q_PROPERTY(bool     pipCamera       READ pipCamera      WRITE setPipCamera  NOTIFY pipCameraChanged)        ///< PiP box shows the other camera (true) or the map (false)
-    Q_PROPERTY(int  skydroidGimbalStyle READ skydroidGimbalStyle WRITE setSkydroidGimbalStyle NOTIFY skydroidGimbalStyleChanged) ///< 0 YPR (C13), 1 GSY/GSP (C10); used from the next apply()
     Q_PROPERTY(DhakshaGimbalCamera* camera      READ camera                         NOTIFY cameraChanged)
     Q_PROPERTY(int  gimbalMaxSpeed  READ gimbalMaxSpeed WRITE setGimbalMaxSpeed NOTIFY gimbalMaxSpeedChanged)  ///< Degrees per second at full joystick, 10..60
-    Q_PROPERTY(QStringList thermalPaletteNames READ thermalPaletteNames CONSTANT)
-    Q_PROPERTY(int  thermalPalette  READ thermalPalette WRITE setThermalPalette NOTIFY thermalPaletteChanged)  ///< Night camera palette, saved; sent when chosen and when the camera connects
     Q_PROPERTY(int  videoMode       READ videoMode      WRITE setVideoMode      NOTIFY videoModeChanged)       ///< VideoMode, saved per camera; used from the next apply()
     Q_PROPERTY(bool nativeVideoSupported READ nativeVideoSupported CONSTANT)                                    ///< The fast player works on this platform (Android)
     Q_PROPERTY(bool nativeVideo     READ nativeVideo    WRITE setNativeVideo    NOTIFY nativeVideoChanged)     ///< Fast player chosen in the settings, saved
     Q_PROPERTY(bool nativeVideoActive READ nativeVideoActive                    NOTIFY nativeVideoChanged)     ///< The Fly View plays the main camera with the fast player
-    Q_PROPERTY(QString mainVideoUrl READ mainVideoUrl                           NOTIFY mainVideoUrlChanged)    ///< Camera stream on the main screen (day or night)
+    Q_PROPERTY(QString mainVideoUrl READ mainVideoUrl                           NOTIFY mainVideoUrlChanged)    ///< Camera stream on the main screen
     Q_PROPERTY(int  nativeTransport READ nativeTransport WRITE setNativeTransport NOTIFY nativeTransportChanged) ///< NativeTransport, saved; the fast player reconnects when it changes
     Q_PROPERTY(bool nativeTcp       READ nativeTcp                              NOTIFY nativeTransportChanged)
     Q_PROPERTY(QString nativeVideoStatus READ nativeVideoStatus WRITE setNativeVideoStatus NOTIFY nativeVideoStatusChanged) ///< What the fast player receives, set by the Fly View
@@ -80,21 +70,11 @@ public:
     int                     vendor      () const { return _vendor; }
     QString                 cameraIp    () const { return _cameraIp; }
     QString                 rtspUrl     () const { return _rtspUrl; }
-    QString                 nightRtspUrl() const { return _nightRtspUrl; }
-    bool                    nightView   () const { return _nightView; }
-    bool                    pipAvailable() const;
-    bool                    pipCamera   () const { return _pipCamera; }
-    void                    setPipCamera(bool camera);
-    int                     skydroidGimbalStyle() const;
-    void                    setSkydroidGimbalStyle(int style);
     int                     videoMode() const { return _videoMode; }
     void                    setVideoMode(int mode);
     static int              defaultVideoMode(int vendor);
     int                     gimbalMaxSpeed() const;
     void                    setGimbalMaxSpeed(int degreesPerSecond);
-    static QStringList      thermalPaletteNames();
-    int                     thermalPalette() const;
-    void                    setThermalPalette(int palette);
     static constexpr int    kMinGimbalSpeed = 10;
     static constexpr int    kMaxGimbalSpeed = 60;
     DhakshaGimbalCamera*    camera      () const { return _camera; }
@@ -114,10 +94,6 @@ public:
     void setVendor      (int vendor);
     void setCameraIp    (const QString& cameraIp);
     void setRtspUrl     (const QString& rtspUrl);
-    void setNightRtspUrl(const QString& rtspUrl);
-
-    /// Switches the video on screen between the day and the night (thermal) stream; apply() goes back to day.
-    Q_INVOKABLE void toggleNightView();
 
     /// Saves the settings, (re)creates the camera instance, and starts its RTSP video stream.
     Q_INVOKABLE void apply();
@@ -130,19 +106,12 @@ public:
 
     static QString defaultCameraIp  (int vendor);
     static QString defaultRtspUrl   (int vendor);
-    static QString defaultNightRtspUrl(int vendor);
 
 signals:
     void vendorChanged  ();
     void cameraIpChanged();
     void rtspUrlChanged ();
-    void nightRtspUrlChanged();
-    void nightViewChanged();
-    void pipAvailableChanged();
-    void pipCameraChanged();
-    void skydroidGimbalStyleChanged();
     void gimbalMaxSpeedChanged();
-    void thermalPaletteChanged();
     void videoModeChanged();
     void cameraChanged  ();
     void nativeVideoChanged();
@@ -162,15 +131,11 @@ private:
     void _showVideo             (const QString& rtspUrl);
     void _applyNativeVideo      ();
     void _applyVideoMode        ();
-    void _updatePipVideo        ();
 
     int                     _vendor     = VendorNone;
     QString                 _cameraIp;
     QString                 _rtspUrl;
-    QString                 _nightRtspUrl;
-    int                     _videoMode  = VideoLowDelay;
-    bool                    _nightView  = false;
-    bool                    _pipCamera  = true;
+    int                     _videoMode  = VideoSmooth;
     DhakshaGimbalCamera*    _camera     = nullptr;
     bool                    _nativeVideo = true;
     bool                    _nativeVideoActive = false;
